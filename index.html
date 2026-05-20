@@ -423,8 +423,9 @@ function renderTable(){
 
         <tr>
 
-        <td>${item.Date || item.date}</td>
-
+<td>
+${String(item.Date || item.date).split("T")[0]}
+</td>
         <td>${cash}</td>
 
         <td>${card}</td>
