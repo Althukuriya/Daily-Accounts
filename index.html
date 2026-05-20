@@ -1,4 +1,3 @@
-```html
 <!DOCTYPE html>
 <html lang="en">
 
@@ -326,8 +325,6 @@ Clear
 const scriptURL =
 "https://script.google.com/macros/s/AKfycbxKJtaQOFp-z-LM10dGWJELFT-oFnY25_puZhFLvsPma7z6PP9vbFzhfqvMlBjlLNk65g/exec";
 
-
-
 let data = [];
 
 
@@ -465,8 +462,9 @@ function renderTable(){
     let grandNet = 0;
     let grandBank = 0;
 
-    data
-    .filter(item => {
+
+
+    const filteredData = data.filter(item => {
 
         const itemDate =
         String(item.Date || item.date).split("T")[0];
@@ -500,11 +498,16 @@ function renderTable(){
         }
 
         return true;
-    })
+    });
 
-    .reverse()
 
-    .forEach((item)=>{
+
+    const reversedData =
+    [...filteredData].reverse();
+
+
+
+    reversedData.forEach((item)=>{
 
         const cash =
         Number(item.Cash || item.cash) || 0;
@@ -786,7 +789,6 @@ function exportData(){
 
 
 loadData();
-
 
 
 
