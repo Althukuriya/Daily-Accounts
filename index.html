@@ -1,3 +1,4 @@
+```html
 <!DOCTYPE html>
 <html lang="en">
 
@@ -375,7 +376,15 @@ async function addEntry(){
         "Adding entry...";
 
         await fetch(scriptURL,{
+
             method:"POST",
+
+            mode:"cors",
+
+            headers:{
+                "Content-Type":"text/plain"
+            },
+
             body:JSON.stringify(payload)
         });
 
@@ -410,7 +419,12 @@ async function loadData(){
         document.getElementById("status").innerText =
         "Loading data...";
 
-        const response = await fetch(scriptURL);
+        const response = await fetch(scriptURL,{
+
+            method:"GET",
+
+            mode:"cors"
+        });
 
         data = await response.json();
 
@@ -641,6 +655,12 @@ async function deleteEntry(rowIndex){
 
             method:"POST",
 
+            mode:"cors",
+
+            headers:{
+                "Content-Type":"text/plain"
+            },
+
             body:JSON.stringify({
 
                 action:"delete",
@@ -789,10 +809,6 @@ function exportData(){
 
 
 loadData();
-
-
-
-// AUTO REFRESH EVERY 10 SECONDS
 
 setInterval(loadData,10000);
 
