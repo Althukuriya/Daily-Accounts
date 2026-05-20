@@ -617,7 +617,8 @@ function renderTable(){
 
 
 
-function deleteEntry(index){
+```javascript id="7wx2yt"
+async function deleteEntry(rowIndex){
 
     const confirmDelete =
     confirm("Delete this entry?");
@@ -626,10 +627,41 @@ function deleteEntry(index){
         return;
     }
 
-    data.splice(index,1);
+    try{
 
-    renderTable();
+        document.getElementById("status").innerText =
+        "Deleting entry...";
+
+        await fetch(scriptURL,{
+
+            method:"POST",
+
+            body:JSON.stringify({
+
+                action:"delete",
+
+                rowIndex:rowIndex
+
+            })
+        });
+
+        document.getElementById("status").innerText =
+        "Entry deleted successfully";
+
+        loadData();
+
+    }catch(error){
+
+        console.error(error);
+
+        document.getElementById("status").innerText =
+        "Delete failed";
+
+        alert("Delete failed");
+    }
 }
+```
+
 
 
 
