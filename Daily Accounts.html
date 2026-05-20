@@ -1,0 +1,207 @@
+<script>
+
+const scriptURL = "https://script.google.com/macros/s/AKfycbxKJtaQOFp-z-LM10dGWJELFT-oFnY25_puZhFLvsPma7z6PP9vbFzhfqvMlBjlLNk65g/exec";
+
+let data = [];
+
+
+
+async function addEntry(){
+
+    const date = document.getElementById("date").value;
+    const cash = Number(document.getElementById("cash").value) || 0;
+    const card = Number(document.getElementById("card").value) || 0;
+    const scanner = Number(document.getElementById("scanner").value) || 0;
+    const expense = Number(document.getElementById("expense").value) || 0;
+
+    if(!date){
+        alert("Please select date");
+        return;
+    }
+
+    const total = cash + card + scanner;
+    const net = total - expense;
+    const bank = card + scanner;
+
+    const payload = {
+        date,
+        cash,
+        card,
+        scanner,
+        total,
+        expense,
+        net,
+        bank
+    };
+
+    try{
+
+        await fetch(scriptURL,{
+            method:"POST",
+            body:JSON.stringify(payload)
+        });
+
+        alert("Entry Added Successfully");
+
+        document.getElementById("cash").value = "";
+        document.getElementById("card").value = "";
+        document.getElementById("scanner").value = "";
+        document.getElementById("expense").value = "";
+
+        loadData();
+
+    }catch(error){
+
+        console.error(error);
+        alert("Error adding entry");
+
+    }
+}
+
+
+
+
+async function loadData(){
+
+    try{
+
+        const response = await fetch(scriptURL);
+
+        data = await response.json();
+
+        renderTable();
+
+    }catch(error){
+
+        console.error(error);
+        alert("Error loading data");
+
+    }
+}
+
+
+
+
+function renderTable(){
+
+    const tbody = document.getElementById("tableBody");
+
+    tbody.innerHTML = "";
+
+    const filter = document
+        .getElementById("searchDate")
+        .value
+        .toLowerCase();
+
+    let grandCash = 0;
+    let grandCard = 0;
+    let grandScanner = 0;
+    let grandTotal = 0;
+    let grandExpense = 0;
+    let grandNet = 0;
+    let grandBank = 0;
+
+    data
+    .filter(item =>
+        String(item.Date || item.date)
+        .toLowerCase()
+        .includes(filter)
+    )
+
+    .reverse()
+
+    .forEach((item)=>{
+
+        const cash = Number(item.Cash || item.cash) || 0;
+        const card = Number(item.Card || item.card) || 0;
+        const scanner = Number(item.Scanner || item.scanner) || 0;
+        const total = Number(item.Total || item.total) || 0;
+        const expense = Number(item.Expense || item.expense) || 0;
+        const net = Number(item.Net || item.net) || 0;
+        const bank = Number(item.Bank || item.bank) || 0;
+
+        grandCash += cash;
+        grandCard += card;
+        grandScanner += scanner;
+        grandTotal += total;
+        grandExpense += expense;
+        grandNet += net;
+        grandBank += bank;
+
+        tbody.innerHTML += `
+        <tr>
+            <td>${item.Date || item.date}</td>
+            <td>${cash}</td>
+            <td>${card}</td>
+            <td>${scanner}</td>
+            <td>${total}</td>
+            <td>${expense}</td>
+            <td>${net}</td>
+            <td>${bank}</td>
+            <td>-</td>
+        </tr>
+        `;
+    });
+
+
+
+
+    document.getElementById("grandCash").innerText = grandCash;
+    document.getElementById("grandCard").innerText = grandCard;
+    document.getElementById("grandScanner").innerText = grandScanner;
+    document.getElementById("grandTotal").innerText = grandTotal;
+    document.getElementById("grandExpense").innerText = grandExpense;
+    document.getElementById("grandNet").innerText = grandNet;
+    document.getElementById("grandBank").innerText = grandBank;
+
+    document.getElementById("sumCash").innerText = grandCash;
+    document.getElementById("sumCard").innerText = grandCard;
+    document.getElementById("sumScanner").innerText = grandScanner;
+    document.getElementById("sumTotal").innerText = grandTotal;
+    document.getElementById("sumExpense").innerText = grandExpense;
+    document.getElementById("sumNet").innerText = grandNet;
+    document.getElementById("sumBank").innerText = grandBank;
+}
+
+
+
+
+function exportData(){
+
+    const blob = new Blob(
+        [JSON.stringify(data,null,2)],
+        {type:"application/json"}
+    );
+
+    const a = document.createElement("a");
+
+    a.href = URL.createObjectURL(blob);
+
+    a.download = "daily_accounts_backup.json";
+
+    a.click();
+}
+
+
+
+
+async function clearAll(){
+
+    alert(
+        "Google Sheets data cannot be cleared from website directly yet."
+    );
+
+}
+
+
+
+
+loadData();
+
+
+
+// AUTO REFRESH EVERY 10 SECONDS
+
+setInterval(loadData,10000);
+
+</script>
