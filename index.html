@@ -1,6 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
+<title>Daily Accounts Tracker</title>
+
+<style>
+
+*{
+    box-sizing:border-box;
+    font-family:Arial,sans-serif;
+}
+
+body{
+    margin:0;
+    padding:20px;
+    background:#f4f6f9;
+    color:#222;
+}
+
+h1{
+    margin-bottom:20px;
+}
+
+.top-bar{
+    display:flex;
+    flex-wrap:wrap;
+    gap:10px;
+    margin-bottom:15px;
+}
+
+input,button{
+    padding:10px;
+    border-radius:8px;
+    border:1px solid #ccc;
+    font-size:14px;
+}
+
+button{
+    background:#111827;
+    color:white;
+    border:none;
+    cursor:pointer;
+}
+
+button:hover{
+    opacity:0.9;
+}
+
+.filters{
+    margin-bottom:15px;
+}
+
+.summary{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+    gap:12px;
+    margin-bottom:20px;
+}
+
+.card{
+    background:white;
+    padding:15px;
+    border-radius:12px;
+    box-shadow:0 2px 8px rgba(0,0,0,0.08);
+}
+
+.card h3{
+    margin:0 0 8px;
+    color:#666;
+    font-size:14px;
+}
+
+.card p{
+    margin:0;
+    font-size:24px;
+    font-weight:bold;
+}
+
+.table-container{
+    overflow:auto;
+    background:white;
+    border-radius:12px;
+    box-shadow:0 2px 10px rgba(0,0,0,0.08);
+}
+
+table{
+    width:100%;
+    border-collapse:collapse;
+    min-width:1100px;
+}
+
+th,td{
+    padding:12px;
+    text-align:center;
+    border-bottom:1px solid #eee;
+}
+
+th{
+    background:#111827;
+    color:white;
+    position:sticky;
+    top:0;
+}
+
+tr:hover{
+    background:#f9fafb;
+}
+
+.grand-total{
+    background:#dbeafe;
+    font-weight:bold;
+}
+
+.status{
+    margin-bottom:15px;
+    font-weight:bold;
+    color:green;
+}
+
+</style>
+</head>
+
+<body>
+
+<h1>Daily Accounts Tracker</h1>
+
+<div class="status" id="status">
+Connected
+</div>
+
+<div class="top-bar">
+
+<input type="date" id="date">
+
+<input type="number" id="cash" placeholder="Cash">
+
+<input type="number" id="card" placeholder="Card">
+
+<input type="number" id="scanner" placeholder="Scanner">
+
+<input type="number" id="expense" placeholder="Expense">
+
+<button onclick="addEntry()">
+Add Entry
+</button>
+
+<button onclick="exportData()">
+Export JSON
+</button>
+
+</div>
+
+<div class="filters">
+
+<input
+type="text"
+id="searchDate"
+placeholder="Filter by date..."
+onkeyup="renderTable()"
+/>
+
+</div>
+
+<div class="summary">
+
+<div class="card">
+<h3>Total Cash</h3>
+<p id="sumCash">0</p>
+</div>
+
+<div class="card">
+<h3>Total Card</h3>
+<p id="sumCard">0</p>
+</div>
+
+<div class="card">
+<h3>Total Scanner</h3>
+<p id="sumScanner">0</p>
+</div>
+
+<div class="card">
+<h3>Grand Total</h3>
+<p id="sumTotal">0</p>
+</div>
+
+<div class="card">
+<h3>Total Expense</h3>
+<p id="sumExpense">0</p>
+</div>
+
+<div class="card">
+<h3>Total Net</h3>
+<p id="sumNet">0</p>
+</div>
+
+<div class="card">
+<h3>Total Bank</h3>
+<p id="sumBank">0</p>
+</div>
+
+</div>
+
+<div class="table-container">
+
+<table>
+
+<thead>
+
+<tr>
+<th>Date</th>
+<th>Cash</th>
+<th>Card</th>
+<th>Scanner</th>
+<th>Total</th>
+<th>Expense</th>
+<th>Net</th>
+<th>Bank</th>
+</tr>
+
+</thead>
+
+<tbody id="tableBody"></tbody>
+
+<tfoot>
+
+<tr class="grand-total">
+
+<td>GRAND TOTAL</td>
+
+<td id="grandCash">0</td>
+<td id="grandCard">0</td>
+<td id="grandScanner">0</td>
+<td id="grandTotal">0</td>
+<td id="grandExpense">0</td>
+<td id="grandNet">0</td>
+<td id="grandBank">0</td>
+
+</tr>
+
+</tfoot>
+
+</table>
+
+</div>
+
 <script>
 
-const scriptURL = "https://script.google.com/macros/s/AKfycbxKJtaQOFp-z-LM10dGWJELFT-oFnY25_puZhFLvsPma7z6PP9vbFzhfqvMlBjlLNk65g/exec";
+const scriptURL =
+"https://script.google.com/macros/s/AKfycbxKJtaQOFp-z-LM10dGWJELFT-oFnY25_puZhFLvsPma7z6PP9vbFzhfqvMlBjlLNk65g/exec";
 
 let data = [];
 
@@ -9,18 +259,29 @@ let data = [];
 async function addEntry(){
 
     const date = document.getElementById("date").value;
-    const cash = Number(document.getElementById("cash").value) || 0;
-    const card = Number(document.getElementById("card").value) || 0;
-    const scanner = Number(document.getElementById("scanner").value) || 0;
-    const expense = Number(document.getElementById("expense").value) || 0;
+
+    const cash =
+    Number(document.getElementById("cash").value) || 0;
+
+    const card =
+    Number(document.getElementById("card").value) || 0;
+
+    const scanner =
+    Number(document.getElementById("scanner").value) || 0;
+
+    const expense =
+    Number(document.getElementById("expense").value) || 0;
 
     if(!date){
+
         alert("Please select date");
         return;
     }
 
     const total = cash + card + scanner;
+
     const net = total - expense;
+
     const bank = card + scanner;
 
     const payload = {
@@ -36,12 +297,16 @@ async function addEntry(){
 
     try{
 
+        document.getElementById("status").innerText =
+        "Adding entry...";
+
         await fetch(scriptURL,{
             method:"POST",
             body:JSON.stringify(payload)
         });
 
-        alert("Entry Added Successfully");
+        document.getElementById("status").innerText =
+        "Entry added successfully";
 
         document.getElementById("cash").value = "";
         document.getElementById("card").value = "";
@@ -53,8 +318,11 @@ async function addEntry(){
     }catch(error){
 
         console.error(error);
-        alert("Error adding entry");
 
+        document.getElementById("status").innerText =
+        "Error adding entry";
+
+        alert("Error adding entry");
     }
 }
 
@@ -65,17 +333,26 @@ async function loadData(){
 
     try{
 
+        document.getElementById("status").innerText =
+        "Loading data...";
+
         const response = await fetch(scriptURL);
 
         data = await response.json();
 
         renderTable();
 
+        document.getElementById("status").innerText =
+        "Connected";
+
     }catch(error){
 
         console.error(error);
-        alert("Error loading data");
 
+        document.getElementById("status").innerText =
+        "Connection error";
+
+        alert("Error loading data");
     }
 }
 
@@ -84,14 +361,15 @@ async function loadData(){
 
 function renderTable(){
 
-    const tbody = document.getElementById("tableBody");
+    const tbody =
+    document.getElementById("tableBody");
 
     tbody.innerHTML = "";
 
-    const filter = document
-        .getElementById("searchDate")
-        .value
-        .toLowerCase();
+    const filter =
+    document.getElementById("searchDate")
+    .value
+    .toLowerCase();
 
     let grandCash = 0;
     let grandCard = 0;
@@ -110,15 +388,28 @@ function renderTable(){
 
     .reverse()
 
-    .forEach((item)=>{
+    .forEach(item=>{
 
-        const cash = Number(item.Cash || item.cash) || 0;
-        const card = Number(item.Card || item.card) || 0;
-        const scanner = Number(item.Scanner || item.scanner) || 0;
-        const total = Number(item.Total || item.total) || 0;
-        const expense = Number(item.Expense || item.expense) || 0;
-        const net = Number(item.Net || item.net) || 0;
-        const bank = Number(item.Bank || item.bank) || 0;
+        const cash =
+        Number(item.Cash || item.cash) || 0;
+
+        const card =
+        Number(item.Card || item.card) || 0;
+
+        const scanner =
+        Number(item.Scanner || item.scanner) || 0;
+
+        const total =
+        Number(item.Total || item.total) || 0;
+
+        const expense =
+        Number(item.Expense || item.expense) || 0;
+
+        const net =
+        Number(item.Net || item.net) || 0;
+
+        const bank =
+        Number(item.Bank || item.bank) || 0;
 
         grandCash += cash;
         grandCard += card;
@@ -129,38 +420,78 @@ function renderTable(){
         grandBank += bank;
 
         tbody.innerHTML += `
+
         <tr>
-            <td>${item.Date || item.date}</td>
-            <td>${cash}</td>
-            <td>${card}</td>
-            <td>${scanner}</td>
-            <td>${total}</td>
-            <td>${expense}</td>
-            <td>${net}</td>
-            <td>${bank}</td>
-            <td>-</td>
+
+        <td>${item.Date || item.date}</td>
+
+        <td>${cash}</td>
+
+        <td>${card}</td>
+
+        <td>${scanner}</td>
+
+        <td>${total}</td>
+
+        <td>${expense}</td>
+
+        <td>${net}</td>
+
+        <td>${bank}</td>
+
         </tr>
+
         `;
     });
 
 
 
 
-    document.getElementById("grandCash").innerText = grandCash;
-    document.getElementById("grandCard").innerText = grandCard;
-    document.getElementById("grandScanner").innerText = grandScanner;
-    document.getElementById("grandTotal").innerText = grandTotal;
-    document.getElementById("grandExpense").innerText = grandExpense;
-    document.getElementById("grandNet").innerText = grandNet;
-    document.getElementById("grandBank").innerText = grandBank;
+    document.getElementById("grandCash").innerText =
+    grandCash;
 
-    document.getElementById("sumCash").innerText = grandCash;
-    document.getElementById("sumCard").innerText = grandCard;
-    document.getElementById("sumScanner").innerText = grandScanner;
-    document.getElementById("sumTotal").innerText = grandTotal;
-    document.getElementById("sumExpense").innerText = grandExpense;
-    document.getElementById("sumNet").innerText = grandNet;
-    document.getElementById("sumBank").innerText = grandBank;
+    document.getElementById("grandCard").innerText =
+    grandCard;
+
+    document.getElementById("grandScanner").innerText =
+    grandScanner;
+
+    document.getElementById("grandTotal").innerText =
+    grandTotal;
+
+    document.getElementById("grandExpense").innerText =
+    grandExpense;
+
+    document.getElementById("grandNet").innerText =
+    grandNet;
+
+    document.getElementById("grandBank").innerText =
+    grandBank;
+
+
+
+
+    document.getElementById("sumCash").innerText =
+    grandCash;
+
+    document.getElementById("sumCard").innerText =
+    grandCard;
+
+    document.getElementById("sumScanner").innerText =
+    grandScanner;
+
+    document.getElementById("sumTotal").innerText =
+    grandTotal;
+
+    document.getElementById("sumExpense").innerText =
+    grandExpense;
+
+    document.getElementById("sumNet").innerText =
+    grandNet;
+
+    document.getElementById("sumBank").innerText =
+    grandBank;
+
 }
 
 
@@ -173,24 +504,16 @@ function exportData(){
         {type:"application/json"}
     );
 
-    const a = document.createElement("a");
+    const a =
+    document.createElement("a");
 
-    a.href = URL.createObjectURL(blob);
+    a.href =
+    URL.createObjectURL(blob);
 
-    a.download = "daily_accounts_backup.json";
+    a.download =
+    "daily_accounts_backup.json";
 
     a.click();
-}
-
-
-
-
-async function clearAll(){
-
-    alert(
-        "Google Sheets data cannot be cleared from website directly yet."
-    );
-
 }
 
 
@@ -205,3 +528,6 @@ loadData();
 setInterval(loadData,10000);
 
 </script>
+
+</body>
+</html>
