@@ -2,7 +2,9 @@
 <html lang="en">
 
 <head>
+
 <meta charset="UTF-8" />
+
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 
 <title>Daily Accounts Tracker</title>
@@ -32,7 +34,9 @@ h1{
     margin-bottom:15px;
 }
 
-input,button{
+input,
+button,
+select{
     padding:10px;
     border-radius:8px;
     border:1px solid #ccc;
@@ -51,7 +55,10 @@ button:hover{
 }
 
 .filters{
-    margin-bottom:15px;
+    display:flex;
+    flex-wrap:wrap;
+    gap:10px;
+    margin-bottom:20px;
 }
 
 .summary{
@@ -90,7 +97,7 @@ button:hover{
 table{
     width:100%;
     border-collapse:collapse;
-    min-width:1100px;
+    min-width:1300px;
 }
 
 th,td{
@@ -121,7 +128,21 @@ tr:hover{
     color:green;
 }
 
+.delete-btn{
+    background:red;
+    padding:6px 10px;
+    border:none;
+    border-radius:6px;
+    color:white;
+    cursor:pointer;
+}
+
+.delete-btn:hover{
+    opacity:0.8;
+}
+
 </style>
+
 </head>
 
 <body>
@@ -159,9 +180,57 @@ Export JSON
 <input
 type="text"
 id="searchDate"
-placeholder="Filter by date..."
+placeholder="Search date..."
 onkeyup="renderTable()"
 />
+
+<input
+type="date"
+id="fromDate"
+onchange="renderTable()"
+/>
+
+<input
+type="date"
+id="toDate"
+onchange="renderTable()"
+/>
+
+<select id="typeFilter" onchange="renderTable()">
+
+<option value="">All Types</option>
+
+<option value="cash">Cash</option>
+
+<option value="card">Card</option>
+
+<option value="scanner">Scanner</option>
+
+<option value="bank">Bank</option>
+
+<option value="expense">Expense</option>
+
+</select>
+
+<button onclick="setTodayFilter()">
+Today
+</button>
+
+<button onclick="setYesterdayFilter()">
+Yesterday
+</button>
+
+<button onclick="setThisMonthFilter()">
+This Month
+</button>
+
+<button onclick="setThisYearFilter()">
+This Year
+</button>
+
+<button onclick="clearFilters()">
+Clear
+</button>
 
 </div>
 
@@ -211,6 +280,7 @@ onkeyup="renderTable()"
 <thead>
 
 <tr>
+
 <th>Date</th>
 <th>Cash</th>
 <th>Card</th>
@@ -219,6 +289,8 @@ onkeyup="renderTable()"
 <th>Expense</th>
 <th>Net</th>
 <th>Bank</th>
+<th>Action</th>
+
 </tr>
 
 </thead>
@@ -238,6 +310,7 @@ onkeyup="renderTable()"
 <td id="grandExpense">0</td>
 <td id="grandNet">0</td>
 <td id="grandBank">0</td>
+<td>-</td>
 
 </tr>
 
@@ -258,7 +331,8 @@ let data = [];
 
 async function addEntry(){
 
-    const date = document.getElementById("date").value;
+    const date =
+    document.getElementById("date").value;
 
     const cash =
     Number(document.getElementById("cash").value) || 0;
@@ -328,7 +402,6 @@ async function addEntry(){
 
 
 
-
 async function loadData(){
 
     try{
@@ -358,7 +431,6 @@ async function loadData(){
 
 
 
-
 function renderTable(){
 
     const tbody =
@@ -366,10 +438,19 @@ function renderTable(){
 
     tbody.innerHTML = "";
 
-    const filter =
+    const searchFilter =
     document.getElementById("searchDate")
     .value
     .toLowerCase();
+
+    const fromDate =
+    document.getElementById("fromDate").value;
+
+    const toDate =
+    document.getElementById("toDate").value;
+
+    const typeFilter =
+    document.getElementById("typeFilter").value;
 
     let grandCash = 0;
     let grandCard = 0;
@@ -380,15 +461,45 @@ function renderTable(){
     let grandBank = 0;
 
     data
-    .filter(item =>
-        String(item.Date || item.date)
-        .toLowerCase()
-        .includes(filter)
-    )
+    .filter(item => {
+
+        const itemDate =
+        String(item.Date || item.date).split("T")[0];
+
+        if(
+            searchFilter &&
+            !itemDate.toLowerCase().includes(searchFilter)
+        ){
+            return false;
+        }
+
+        if(fromDate && itemDate < fromDate){
+            return false;
+        }
+
+        if(toDate && itemDate > toDate){
+            return false;
+        }
+
+        if(typeFilter){
+
+            const value =
+            Number(
+                item[typeFilter.charAt(0).toUpperCase() + typeFilter.slice(1)]
+                || item[typeFilter]
+            ) || 0;
+
+            if(value <= 0){
+                return false;
+            }
+        }
+
+        return true;
+    })
 
     .reverse()
 
-    .forEach(item=>{
+    .forEach((item,index)=>{
 
         const cash =
         Number(item.Cash || item.cash) || 0;
@@ -423,9 +534,10 @@ function renderTable(){
 
         <tr>
 
-<td>
-${String(item.Date || item.date).split("T")[0]}
-</td>
+        <td>
+        ${String(item.Date || item.date).split("T")[0]}
+        </td>
+
         <td>${cash}</td>
 
         <td>${card}</td>
@@ -440,11 +552,21 @@ ${String(item.Date || item.date).split("T")[0]}
 
         <td>${bank}</td>
 
-        </tr>
+        <td>
 
+        <button
+        class="delete-btn"
+        onclick="deleteEntry(${index})">
+
+        Delete
+
+        </button>
+
+        </td>
+
+        </tr>
         `;
     });
-
 
 
 
@@ -471,7 +593,6 @@ ${String(item.Date || item.date).split("T")[0]}
 
 
 
-
     document.getElementById("sumCash").innerText =
     grandCash;
 
@@ -492,9 +613,115 @@ ${String(item.Date || item.date).split("T")[0]}
 
     document.getElementById("sumBank").innerText =
     grandBank;
-
 }
 
+
+
+function deleteEntry(index){
+
+    const confirmDelete =
+    confirm("Delete this entry?");
+
+    if(!confirmDelete){
+        return;
+    }
+
+    data.splice(index,1);
+
+    renderTable();
+}
+
+
+
+function setTodayFilter(){
+
+    const today =
+    new Date().toISOString().split("T")[0];
+
+    document.getElementById("fromDate").value =
+    today;
+
+    document.getElementById("toDate").value =
+    today;
+
+    renderTable();
+}
+
+
+
+function setYesterdayFilter(){
+
+    const d = new Date();
+
+    d.setDate(d.getDate()-1);
+
+    const yesterday =
+    d.toISOString().split("T")[0];
+
+    document.getElementById("fromDate").value =
+    yesterday;
+
+    document.getElementById("toDate").value =
+    yesterday;
+
+    renderTable();
+}
+
+
+
+function setThisMonthFilter(){
+
+    const d = new Date();
+
+    const firstDay =
+    new Date(d.getFullYear(),d.getMonth(),1)
+    .toISOString()
+    .split("T")[0];
+
+    const lastDay =
+    new Date(d.getFullYear(),d.getMonth()+1,0)
+    .toISOString()
+    .split("T")[0];
+
+    document.getElementById("fromDate").value =
+    firstDay;
+
+    document.getElementById("toDate").value =
+    lastDay;
+
+    renderTable();
+}
+
+
+
+function setThisYearFilter(){
+
+    const year =
+    new Date().getFullYear();
+
+    document.getElementById("fromDate").value =
+    `${year}-01-01`;
+
+    document.getElementById("toDate").value =
+    `${year}-12-31`;
+
+    renderTable();
+}
+
+
+
+function clearFilters(){
+
+    document.getElementById("searchDate").value = "";
+
+    document.getElementById("fromDate").value = "";
+
+    document.getElementById("toDate").value = "";
+
+    document.getElementById("typeFilter").value = "";
+
+    renderTable();
+}
 
 
 
@@ -516,7 +743,6 @@ function exportData(){
 
     a.click();
 }
-
 
 
 
