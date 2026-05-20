@@ -1,11 +1,12 @@
+```html
 <!DOCTYPE html>
 <html lang="en">
 
 <head>
 
-<meta charset="UTF-8" />
+<meta charset="UTF-8">
 
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <title>Daily Accounts Tracker</title>
 
@@ -323,7 +324,7 @@ Clear
 <script>
 
 const scriptURL =
-"https://script.google.com/macros/s/AKfycbxKJtaQOFp-z-LM10dGWJELFT-oFnY25_puZhFLvsPma7z6PP9vbFzhfqvMlBjlLNk65g/exec";
+"YOUR_GOOGLE_APPS_SCRIPT_WEBAPP_URL";
 
 let data = [];
 
@@ -402,6 +403,7 @@ async function addEntry(){
 
 
 
+
 async function loadData(){
 
     try{
@@ -428,6 +430,7 @@ async function loadData(){
         alert("Error loading data");
     }
 }
+
 
 
 
@@ -499,7 +502,7 @@ function renderTable(){
 
     .reverse()
 
-    .forEach((item,index)=>{
+    .forEach((item)=>{
 
         const cash =
         Number(item.Cash || item.cash) || 0;
@@ -539,17 +542,11 @@ function renderTable(){
         </td>
 
         <td>${cash}</td>
-
         <td>${card}</td>
-
         <td>${scanner}</td>
-
         <td>${total}</td>
-
         <td>${expense}</td>
-
         <td>${net}</td>
-
         <td>${bank}</td>
 
         <td>
@@ -565,8 +562,10 @@ function renderTable(){
         </td>
 
         </tr>
+
         `;
     });
+
 
 
 
@@ -590,6 +589,7 @@ function renderTable(){
 
     document.getElementById("grandBank").innerText =
     grandBank;
+
 
 
 
@@ -617,7 +617,7 @@ function renderTable(){
 
 
 
-```javascript id="7wx2yt"
+
 async function deleteEntry(rowIndex){
 
     const confirmDelete =
@@ -660,7 +660,6 @@ async function deleteEntry(rowIndex){
         alert("Delete failed");
     }
 }
-```
 
 
 
@@ -681,6 +680,7 @@ function setTodayFilter(){
 
 
 
+
 function setYesterdayFilter(){
 
     const d = new Date();
@@ -698,6 +698,7 @@ function setYesterdayFilter(){
 
     renderTable();
 }
+
 
 
 
@@ -726,6 +727,7 @@ function setThisMonthFilter(){
 
 
 
+
 function setThisYearFilter(){
 
     const year =
@@ -742,6 +744,7 @@ function setThisYearFilter(){
 
 
 
+
 function clearFilters(){
 
     document.getElementById("searchDate").value = "";
@@ -754,6 +757,7 @@ function clearFilters(){
 
     renderTable();
 }
+
 
 
 
@@ -778,7 +782,9 @@ function exportData(){
 
 
 
+
 loadData();
+
 
 
 
@@ -790,3 +796,4 @@ setInterval(loadData,10000);
 
 </body>
 </html>
+```
